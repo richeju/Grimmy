@@ -66,6 +66,7 @@ def run_bot():
                 continue
         
         enemy_positions = detection.find_enemy()
+        print(f"Positions détectées : {enemy_positions}")
         
         if enemy_positions:
             if current_target and any(
