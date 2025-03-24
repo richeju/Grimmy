@@ -4,58 +4,35 @@ import keyboard
 import time
 import pyautogui
 
-pyautogui.FAILSAFE = True
-pyautogui.PAUSE = 0.1
-
+# Obtenir la résolution de l’écran
 screen_width, screen_height = pyautogui.size()
 center_x, center_y = screen_width // 2, screen_height // 2
 
 def run_bot():
-    print("Bot démarré. Déplace la souris en haut à gauche pour arrêter (Fail-Safe).")
+    print("Bot démarré. Appuie sur 'q' pour quitter.")
     print(f"Résolution détectée : {screen_width}x{screen_height}")
-    time.sleep(3)
+    time.sleep(3)  # Délai pour lancer le jeu
     
     current_target = None
-    target_start_time = None
-    target_position = None
-    max_target_duration = 5
     
     while not keyboard.is_pressed('q'):
         enemy_positions = detection.find_enemy()
         
         if enemy_positions:
-            if current_target and any(
+            if not current_target or not any(
                 ((pos[0] - current_target[0])**2 + (pos[1] - current_target[1])**2)**0.5 < 50
                 for pos in enemy_positions
             ):
-                if target_position == current_target:
-                    if time.time() - target_start_time > max_target_duration:
-                        print("Cible statique détectée (probablement pas un ennemi), changement de cible...")
-                        current_target = None
-                        target_start_time = None
-                        target_position = None
-                else:
-                    target_position = current_target
-                    target_start_time = time.time()
-            else:
                 current_target = enemy_positions[0]
-                target_start_time = time.time()
-                target_position = current_target
-            
-            if current_target:
-                print(f"Cible suivie à {current_target}")
-                controls.attack_enemy(current_target)
-                controls.pickup_loot(current_target)
+            print(f"Cible suivie à {current_target}")
+            controls.attack_enemy(current_target)
+            controls.pickup_loot(current_target)
         else:
-            print("Aucun ennemi détecté, déplacement...")
+            print("Aucun ennemi détecté, recherche...")
             current_target = None
-            target_start_time = None
-            target_position = None
-            pyautogui.keyDown('w')
-            time.sleep(1)
-            pyautogui.keyUp('w')
-            pyautogui.moveTo(center_x, center_y - 200)
-            pyautogui.dragRel(screen_width // 6, 0, duration=0.5)
+            # Déplacer la souris pour "chercher" (balayer l’écran)
+            pyautogui.moveTo(center_x, center_y)  # Centre de l’écran
+            pyautogui.dragRel(screen_width // 6, 0, duration=0.5)  # Balayer 1/6 de la largeur de l’écran
         
         time.sleep(0.05)
     
