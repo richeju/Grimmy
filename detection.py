@@ -9,7 +9,7 @@ def find_enemy():
     screenshot = np.array(screenshot)
     screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2HSV)
     
-    lower_red = np.array([0, 120, 70])
+    lower_red = np.array([0, 150, 100])  # Plus strict sur la teinte rouge
     upper_red = np.array([10, 255, 255])
     mask = cv2.inRange(screenshot, lower_red, upper_red)
     
@@ -17,7 +17,7 @@ def find_enemy():
     enemy_positions = []
     
     for contour in contours:
-        if cv2.contourArea(contour) > 100:
+        if cv2.contourArea(contour) > 100 and cv2.contourArea(contour) < 5000:
             x, y, w, h = cv2.boundingRect(contour)
             if 50 < w < 150 and 5 < h < 15:
                 enemy_positions.append((x + w // 2, y + h // 2))
