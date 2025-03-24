@@ -14,7 +14,6 @@ screen_width, screen_height = pyautogui.size()
 center_x, center_y = screen_width // 2, screen_height // 2
 
 def is_grim_dawn_active():
-    """Vérifier si la fenêtre de Grim Dawn est active."""
     try:
         active_window = gw.getActiveWindow()
         if active_window and "Grim Dawn" in active_window.title:
@@ -22,6 +21,22 @@ def is_grim_dawn_active():
         return False
     except Exception as e:
         print(f"Erreur lors de la vérification de la fenêtre : {e}")
+        return False
+
+def activate_grim_dawn():
+    """Réactiver la fenêtre de Grim Dawn si elle n’est pas active."""
+    try:
+        windows = gw.getWindowsWithTitle("Grim Dawn")
+        if windows:
+            grim_dawn_window = windows[0]
+            grim_dawn_window.activate()
+            time.sleep(0.5)  # Attendre que la fenêtre soit active
+            return True
+        else:
+            print("Fenêtre de Grim Dawn non trouvée.")
+            return False
+    except Exception as e:
+        print(f"Erreur lors de l’activation de la fenêtre : {e}")
         return False
 
 def find_quest_marker():
@@ -38,7 +53,10 @@ def find_quest_marker():
         if cv2.contourArea(contour) > 50:
             x, y, w, h = cv2.boundingRect(contour)
             if 10 < w < 50 and 10 < h < 50:
-                return (x + w // 2, y + h // 2)
+                # Vérifier que la position est dans une zone "sûre" (pas près des bords)
+                marker_x, marker_y = x + w // 2, y + h // 2
+                if 100 < marker_x < screen_width - 100 and 100 < marker_y < screen_height - 100:
+                    return (marker_x, marker_y)
     return None
 
 def find_npc_marker():
@@ -55,7 +73,10 @@ def find_npc_marker():
         if cv2.contourArea(contour) > 50:
             x, y, w, h = cv2.boundingRect(contour)
             if 10 < w < 50 and 10 < h < 50:
-                return (x + w // 2, y + h // 2)
+                # Vérifier que la position est dans une zone "sûre"
+                marker_x, marker_y = x + w // 2, y + h // 2
+                if 100 < marker_x < screen_width - 100 and 100 < marker_y < screen_height - 100:
+                    return (marker_x, marker_y)
     return None
 
 def return_to_rift():
@@ -79,15 +100,17 @@ def run_bot():
     farm_cycles = 0
     max_cycles = 5
     search_mode = False
-    search_direction = 1  # 1 pour droite, -1 pour gauche
-    search_counter = 0  # Compteur pour limiter la fréquence du balayage
+    search_direction = 1
+    search_counter = 0
     
     while not keyboard.is_pressed('q'):
-        # Vérifier si Grim Dawn est la fenêtre active
+        # Vérifier si Grim Dawn est actif, sinon le réactiver
         if not is_grim_dawn_active():
-            print("Grim Dawn n’est pas la fenêtre active, mise en pause...")
-            time.sleep(1)  # Attendre avant de vérifier à nouveau
-            continue
+            print("Grim Dawn n’est pas la fenêtre active, tentative de réactivation...")
+            if not activate_grim_dawn():
+                print("Impossible de réactiver Grim Dawn, mise en pause...")
+                time.sleep(1)
+                continue
         
         enemy_positions = detection.find_enemy()
         
@@ -127,28 +150,34 @@ def run_bot():
             if npc_marker:
                 print(f"PNJ détecté à {npc_marker}")
                 pyautogui.moveTo(npc_marker[0], npc_marker[1])
-                pyautogui.click()
+                pyautogui.mouseDown()
+                time.sleep(0.1)
+                pyautogui.mouseUp()
                 time.sleep(1)
-                pyautogui.click(center_x, center_y)
+                pyautogui.moveTo(center_x, center_y)
+                pyautogui.mouseDown()
+                time.sleep(0.1)
+                pyautogui.mouseUp()
                 time.sleep(0.5)
             else:
                 quest_marker = find_quest_marker()
                 if quest_marker:
                     print(f"Flèche de quête détectée à {quest_marker}")
                     pyautogui.moveTo(quest_marker[0], quest_marker[1])
-                    pyautogui.click()
+                    pyautogui.mouseDown()
+                    time.sleep(0.1)
+                    pyautogui.mouseUp()
                 else:
                     search_mode = True
                     print("Mode recherche activé...")
                     pyautogui.keyDown('w')
                     time.sleep(0.5)
                     pyautogui.keyUp('w')
-                    # Balayer l’écran toutes les 3 itérations
                     search_counter += 1
                     if search_counter >= 3:
                         pyautogui.moveTo(center_x, center_y - 200)
                         pyautogui.dragRel((screen_width // 8) * search_direction, 0, duration=0.3)
-                        search_direction *= -1  # Alterner la direction
+                        search_direction *= -1
                         search_counter = 0
         
         if farm_cycles >= max_cycles:
