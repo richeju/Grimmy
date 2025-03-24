@@ -56,9 +56,6 @@ def run_bot():
     max_target_duration = 5
     farm_cycles = 0
     max_cycles = 5
-    search_mode = False
-    search_direction = 1
-    search_counter = 0
     
     while not keyboard.is_pressed('q'):
         if not is_grim_dawn_active():
@@ -71,8 +68,6 @@ def run_bot():
         enemy_positions = detection.find_enemy()
         
         if enemy_positions:
-            search_mode = False
-            search_counter = 0
             if current_target and any(
                 ((pos[0] - current_target[0])**2 + (pos[1] - current_target[1])**2)**0.5 < 50
                 for pos in enemy_positions
@@ -97,27 +92,14 @@ def run_bot():
                 controls.pickup_loot(current_target)
                 farm_cycles += 1
         else:
-            print("Aucun ennemi détecté, recherche de monstres...")
+            print("Aucun ennemi détecté, en attente...")
             current_target = None
             target_start_time = None
             target_position = None
-            
-            search_mode = True
-            print("Mode recherche activé...")
-            pyautogui.keyDown('w')
-            time.sleep(0.5)
-            pyautogui.keyUp('w')
-            search_counter += 1
-            if search_counter >= 3:
-                pyautogui.moveTo(center_x, center_y - 200)
-                pyautogui.dragRel((screen_width // 8) * search_direction, 0, duration=0.3)
-                search_direction *= -1
-                search_counter = 0
         
         if farm_cycles >= max_cycles:
             return_to_rift()
             farm_cycles = 0
-            search_mode = False
         
         time.sleep(0.05)
     
