@@ -4,3 +4,4 @@ numpy
 keyboard
 pyscreeze
 Pillow
+pygetwindow
