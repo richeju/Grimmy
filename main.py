@@ -66,7 +66,10 @@ def run_bot():
                 continue
         
         enemy_positions = detection.find_enemy()
-        print(f"Positions détectées : {enemy_positions}")
+        if enemy_positions:
+            print(f"Positions détectées : {[(pos, (abs(pos[0] - center_x), abs(pos[1] - center_y))) for pos in enemy_positions]}")
+        else:
+            print("Aucun ennemi détecté, en attente...")
         
         if enemy_positions:
             if current_target and any(
@@ -93,7 +96,6 @@ def run_bot():
                 controls.pickup_loot(current_target)
                 farm_cycles += 1
         else:
-            print("Aucun ennemi détecté, en attente...")
             current_target = None
             target_start_time = None
             target_position = None
