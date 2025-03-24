@@ -4,17 +4,22 @@ import keyboard
 import time
 import pyautogui
 
+# Activer le Fail-Safe de pyautogui
+pyautogui.FAILSAFE = True  # Déplace la souris en haut à gauche pour arrêter
+pyautogui.PAUSE = 0.1  # Petite pause entre les actions pour éviter de surcharger
+
+# Obtenir la résolution de l’écran
 screen_width, screen_height = pyautogui.size()
 center_x, center_y = screen_width // 2, screen_height // 2
 
 def run_bot():
-    print("Bot démarré. Appuie sur 'q' pour quitter.")
+    print("Bot démarré. Déplace la souris en haut à gauche pour arrêter (Fail-Safe).")
     print(f"Résolution détectée : {screen_width}x{screen_height}")
     time.sleep(3)
     
     current_target = None
     
-    while not keyboard.is_pressed('q'):
+    while not keyboard.is_pressed('q'):  # Garde la condition pour compatibilité
         enemy_positions = detection.find_enemy()
         
         if enemy_positions:
