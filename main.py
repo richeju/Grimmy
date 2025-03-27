@@ -67,7 +67,7 @@ def run_bot():
         
         enemy_positions = detection.find_enemy()
         if enemy_positions:
-            print(f"Positions détectées : {[(pos, (abs(pos[0] - center_x), abs(pos[1] - center_y))) for pos in enemy_positions]}")
+            print(f"Positions détectées : {enemy_positions}")
         else:
             print("Aucun ennemi détecté, en attente...")
         
